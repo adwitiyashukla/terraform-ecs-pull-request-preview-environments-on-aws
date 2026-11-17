@@ -59,9 +59,9 @@ li small {{ color: #6b7280; margin-left: 0.5rem; }}
 <span>image {image_tag}</span><span>expires {expires_at}</span><span>up {uptime}s</span>
 </p>
 <form method="post" action="{root}/notes">
-<input type="text" name="body" maxlength="280" placeholder="leave a note for the next reviewer"
+<input type="text" name="body" maxlength="280" placeholder="leave a note for the next person"
  required>
-<button type="submit">add</button>
+<button type="submit">add note</button>
 </form>
 <ul>{items}</ul>
 </body>
