@@ -57,7 +57,7 @@ li small {{ color: #6b7280; margin-left: 0.5rem; }}
 <h1>{name}</h1>
 <p class="meta">
 <span>image {image_tag}</span><span>expires {expires_at}</span><span>up {uptime}s</span>
-<span>{count} notes</span>
+<span>notes {count}</span>
 </p>
 <form method="post" action="{root}/notes">
 <input type="text" name="body" maxlength="280" placeholder="leave a note for the next reviewer"
