@@ -57,6 +57,7 @@ li small {{ color: #6b7280; margin-left: 0.5rem; }}
 <h1>{name}</h1>
 <p class="meta">
 <span>image {image_tag}</span><span>expires {expires_at}</span><span>up {uptime}s</span>
+<span>notes {count}</span>
 </p>
 <form method="post" action="{root}/notes">
 <input type="text" name="body" maxlength="280" placeholder="leave a note for the next reviewer"
@@ -190,10 +191,11 @@ def create_app(url=None, prefix=None):
 
     @app.get("/", response_class=HTMLResponse)
     def index(request: Request):
+        rows = list_notes()
         items = "".join(
             f"<li>{escape(note.body)}<small>{as_utc(note.created_at):%Y-%m-%d %H:%M} UTC</small>"
             "</li>"
-            for note in list_notes()
+            for note in rows
         )
         details = preview_info()
         return PAGE.format(
@@ -202,6 +204,7 @@ def create_app(url=None, prefix=None):
             image_tag=escape(details["image_tag"]),
             expires_at=escape(details["expires_at"]),
             uptime=int(time.monotonic() - app.state.started_at),
+            count=len(rows),
             items=items or "<li>no notes yet</li>",
         )
 

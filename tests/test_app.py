@@ -73,6 +73,7 @@ def test_index_shows_preview_details(client):
     assert "<h1>pr-7</h1>" in page
     assert "image pr-7-abc1234" in page
     assert "expires 2026-10-01T00:00:00Z" in page
+    assert "notes 0" in page
     assert "no notes yet" in page
 
 
