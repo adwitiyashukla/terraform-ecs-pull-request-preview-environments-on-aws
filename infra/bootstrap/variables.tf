@@ -20,6 +20,28 @@ variable "github_repository" {
   }
 }
 
+variable "github_owner_id" {
+  description = "Numeric id of the GitHub account, part of the immutable OIDC subject claim"
+  type        = number
+  default     = 293685877
+
+  validation {
+    condition     = var.github_owner_id > 0
+    error_message = "github_owner_id must be a positive number."
+  }
+}
+
+variable "github_repository_id" {
+  description = "Numeric id of the GitHub repository, part of the immutable OIDC subject claim"
+  type        = number
+  default     = 1460933850
+
+  validation {
+    condition     = var.github_repository_id > 0
+    error_message = "github_repository_id must be a positive number."
+  }
+}
+
 variable "state_bucket_name" {
   description = "Name of the Terraform state bucket; empty means prenv-tfstate-<account id>"
   type        = string

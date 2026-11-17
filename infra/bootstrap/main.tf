@@ -3,9 +3,12 @@ data "aws_caller_identity" "current" {}
 locals {
   account_id        = data.aws_caller_identity.current.account_id
   state_bucket_name = var.state_bucket_name != "" ? var.state_bucket_name : "prenv-tfstate-${local.account_id}"
+  github_owner      = split("/", var.github_repository)[0]
+  github_name       = split("/", var.github_repository)[1]
+  github_subject    = "repo:${local.github_owner}@${var.github_owner_id}/${local.github_name}@${var.github_repository_id}"
   github_subjects = [
-    "repo:${var.github_repository}:pull_request",
-    "repo:${var.github_repository}:ref:refs/heads/main",
+    "${local.github_subject}:pull_request",
+    "${local.github_subject}:ref:refs/heads/main",
   ]
   home_regions = [var.aws_region, "us-east-1"]
 }
@@ -505,8 +508,14 @@ data "aws_iam_policy_document" "ci_platform" {
   }
 
   statement {
-    sid       = "Budgets"
-    actions   = ["budgets:ViewBudget", "budgets:ModifyBudget"]
+    sid = "Budgets"
+    actions = [
+      "budgets:ViewBudget",
+      "budgets:ModifyBudget",
+      "budgets:ListTagsForResource",
+      "budgets:TagResource",
+      "budgets:UntagResource",
+    ]
     resources = ["arn:aws:budgets::${local.account_id}:budget/prenv-*"]
   }
 
