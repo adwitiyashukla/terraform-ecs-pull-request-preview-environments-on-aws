@@ -34,7 +34,8 @@ jobs:
       - id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - id: image
+      - name: resolve image tag
+        id: image
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           REGISTRY: ${{ steps.ecr.outputs.registry }}
@@ -48,7 +49,8 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - if: steps.image.outputs.exists == 'false'
+      - name: build and push image
+        if: steps.image.outputs.exists == 'false'
         env:
           IMAGE_REF: ${{ steps.image.outputs.ref }}
         run: |
@@ -60,14 +62,16 @@ jobs:
           terraform_version: 1.17.1
           terraform_wrapper: false
 
-      - working-directory: infra/preview
+      - name: terraform init
+        working-directory: infra/preview
         run: >-
           terraform init -input=false
           -backend-config="bucket=${TF_STATE_BUCKET}"
           -backend-config="key=preview/pr-${PR_NUMBER}.tfstate"
           -backend-config="region=${AWS_REGION}"
 
-      - id: apply
+      - name: terraform apply
+        id: apply
         working-directory: infra/preview
         env:
           IMAGE_TAG: ${{ steps.image.outputs.tag }}
@@ -89,15 +93,18 @@ jobs:
 
       - run: pip install -e .
 
-      - id: wait
+      - name: wait until healthy
+        id: wait
         run: |
           started=$(date +%s)
           python -m previewctl wait "$PR_NUMBER" --timeout 600
           echo "seconds=$(( $(date +%s) - started ))" >> "$GITHUB_OUTPUT"
 
-      - run: python -m previewctl smoke "$PR_NUMBER"
+      - name: smoke test
+        run: python -m previewctl smoke "$PR_NUMBER"
 
-      - uses: actions/github-script@v9
+      - name: comment on pull request
+        uses: actions/github-script@v9
         env:
           URL: ${{ steps.apply.outputs.url }}
           EXPIRES_AT: ${{ steps.apply.outputs.expires_at }}
@@ -151,13 +158,15 @@ jobs:
 
       - run: pip install -e .
 
-      - id: destroy
+      - name: terraform destroy
+        id: destroy
         run: |
           started=$(date +%s)
           python -m previewctl destroy "$PR_NUMBER" --state-bucket "$TF_STATE_BUCKET" --infra-dir infra/preview
           echo "seconds=$(( $(date +%s) - started ))" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/github-script@v9
+      - name: comment on pull request
+        uses: actions/github-script@v9
         env:
           DESTROY_SECONDS: ${{ steps.destroy.outputs.seconds }}
         with:

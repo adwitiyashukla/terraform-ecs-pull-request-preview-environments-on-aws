@@ -41,13 +41,15 @@ jobs:
           terraform_version: 1.17.1
           terraform_wrapper: false
 
-      - working-directory: infra/platform
+      - name: terraform init
+        working-directory: infra/platform
         run: >-
           terraform init -input=false
           -backend-config="bucket=${TF_STATE_BUCKET}"
           -backend-config="region=${AWS_REGION}"
 
-      - id: plan
+      - name: terraform plan
+        id: plan
         working-directory: infra/platform
         run: |
           terraform plan -input=false -no-color -out=plan.tfplan | tee plan.txt
@@ -57,7 +59,8 @@ jobs:
             echo "PLAN_EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - uses: actions/github-script@v9
+      - name: comment on pull request
+        uses: actions/github-script@v9
         env:
           PLAN: ${{ steps.plan.outputs.plan }}
         with:
@@ -93,11 +96,13 @@ jobs:
           terraform_version: 1.17.1
           terraform_wrapper: false
 
-      - working-directory: infra/platform
+      - name: terraform init
+        working-directory: infra/platform
         run: >-
           terraform init -input=false
           -backend-config="bucket=${TF_STATE_BUCKET}"
           -backend-config="region=${AWS_REGION}"
 
-      - working-directory: infra/platform
+      - name: terraform apply
+        working-directory: infra/platform
         run: terraform apply -input=false -auto-approve
