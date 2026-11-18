@@ -193,11 +193,21 @@ data "aws_iam_policy_document" "ci_preview" {
   }
 
   statement {
+    sid       = "TaskDefinitionLifecycle"
+    actions   = ["ecs:DescribeTaskDefinition", "ecs:DeregisterTaskDefinition"]
+    resources = ["*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:RequestedRegion"
+      values   = [var.aws_region]
+    }
+  }
+
+  statement {
     sid = "TaskDefinitionManage"
     actions = [
-      "ecs:DeregisterTaskDefinition",
       "ecs:DeleteTaskDefinitions",
-      "ecs:DescribeTaskDefinition",
       "ecs:TagResource",
       "ecs:UntagResource",
       "ecs:ListTagsForResource",
@@ -212,11 +222,22 @@ data "aws_iam_policy_document" "ci_preview" {
       "ecs:UpdateService",
       "ecs:DeleteService",
       "ecs:DescribeServices",
+      "ecs:ListServiceDeployments",
       "ecs:TagResource",
       "ecs:UntagResource",
       "ecs:ListTagsForResource",
     ]
     resources = ["arn:aws:ecs:${var.aws_region}:${local.account_id}:service/prenv/pr-*"]
+  }
+
+  statement {
+    sid     = "ServiceDeploymentsRead"
+    actions = ["ecs:DescribeServiceDeployments", "ecs:DescribeServiceRevisions"]
+    resources = [
+      "arn:aws:ecs:${var.aws_region}:${local.account_id}:service/prenv/pr-*",
+      "arn:aws:ecs:${var.aws_region}:${local.account_id}:service-deployment/prenv/pr-*/*",
+      "arn:aws:ecs:${var.aws_region}:${local.account_id}:service-revision/prenv/pr-*/*",
+    ]
   }
 
   statement {
